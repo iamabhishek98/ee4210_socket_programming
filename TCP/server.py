@@ -1,4 +1,4 @@
-import socket, threading, sys
+import socket, threading, sys, urllib.parse
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,7 +30,7 @@ def onNewClient(conn,addr):
             + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n");
     elif "POST / HTTP/1.1" in data:
         try:
-            entered_text = str(" ".join(data.split('entered_text=')[1].split("+")))
+            entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
             print('Sent updated webpage to', addr)
             conn.sendall(
                 b"HTTP/1.1 200 OK\n"
