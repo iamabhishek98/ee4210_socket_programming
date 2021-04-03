@@ -7,45 +7,40 @@ except:
     sys.exit()
 
 try:
-    HOST = socket.gethostname()  # Standard loopback interface address (localhost)
+    HOST = socket.gethostname()
 except:
     print('Hostname could not be resolved! Exiting...')
     sys.exit()
 
-PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
+PORT = 65432
 
 s.bind((HOST, PORT))
 s.listen()
-print('Listening on '+str(socket.gethostbyname(HOST))+':'+str(PORT)+'...')
+print('Listening on '+str(socket.gethostbyname(HOST))+':'+str(PORT))
 
 def onNewClient(conn,addr):
     print('Connected by', addr)
-    data = conn.recv(1024)
-    req = data.decode('utf-8').split(' ')
-    if len(req):
-        req_type = req[0]
-        if req_type == "GET":
-            print (data)
-            print('Sent empty form to', addr)
+    data = conn.recv(1024).decode('utf-8')
+    if "GET / HTTP/1.1" in data:
+        print('Sent empty form to', addr)
+        conn.sendall(
+            b"HTTP/1.1 200 OK\n"
+            + b"Content-Type: text/html\n"
+            + b"\n"
+            + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n");
+    elif "POST / HTTP/1.1" in data:
+        try:
+            entered_text = str(" ".join(data.split('entered_text=')[1].split("+")))
+            print('Sent updated webpage to', addr)
             conn.sendall(
                 b"HTTP/1.1 200 OK\n"
                 + b"Content-Type: text/html\n"
                 + b"\n"
-                + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n");
-        else:
-            try:
-                entered_text = str(" ".join(req[-1].split('entered_text=')[1].split("+")))
-                print (data)
-                print('Sent updated webpage to', addr)
-                conn.sendall(
-                    b"HTTP/1.1 200 OK\n"
-                    + b"Content-Type: text/html\n"
-                    + b"\n"
-                    + b"<html><body><b>Entered text:</b> \""
-                    + bytes(entered_text,'utf-8')
-                    + b"\"</body></html>\n");
-            except:
-                print('Invalid format!')
+                + b"<html><body><b>Entered text:</b> \""
+                + bytes(entered_text,'utf-8')
+                + b"\"</body></html>\n");
+        except:
+            print('Invalid format!')
 
     conn.close()
 
