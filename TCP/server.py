@@ -12,7 +12,7 @@ except:
     print('Hostname could not be resolved! Exiting...')
     sys.exit()
 
-PORT = 65432
+PORT = 54321
 
 s.bind((HOST, PORT))
 s.listen()
@@ -27,7 +27,7 @@ def onNewClient(conn,addr):
             b"HTTP/1.1 200 OK\n"
             + b"Content-Type: text/html\n"
             + b"\n"
-            + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n");
+            + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n")
     elif "POST / HTTP/1.1" in data:
         try:
             entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
@@ -38,7 +38,7 @@ def onNewClient(conn,addr):
                 + b"\n"
                 + b"<html><body><b>Entered text:</b> \""
                 + bytes(entered_text,'utf-8')
-                + b"\"</body></html>\n");
+                + b"\"</body></html>\n")
         except:
             print('Invalid format!')
 

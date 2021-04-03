@@ -3,7 +3,7 @@ import socket, threading
 NO_OF_CLIENTS = 10
 
 HOST = socket.gethostname()
-PORT = 65432
+PORT = 54321
 
 def execute(id):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
