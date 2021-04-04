@@ -28,7 +28,7 @@ def onNewClient(conn,addr):
             + b"Content-Type: text/html\n"
             + b"\n"
             + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n")
-    elif "POST / HTTP/1.1" in data:
+    elif "POST / HTTP/1.1" in data and "entered_text=" in data:
         try:
             entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
             print('Sent updated webpage to', addr)
