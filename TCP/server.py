@@ -1,10 +1,4 @@
-import socket, threading, sys, urllib.parse
-
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except:
-    print('Failed to create socket! Exiting...')
-    sys.exit()
+import socket, os, sys, urllib.parse
 
 try:
     HOST = socket.gethostname()
@@ -13,10 +7,6 @@ except:
     sys.exit()
 
 PORT = 54321
-
-s.bind((HOST, PORT))
-s.listen()
-print('Listening on '+str(socket.gethostbyname(HOST))+':'+str(PORT))
 
 def onNewClient(conn,addr):
     print('Connected by', addr)
@@ -44,8 +34,23 @@ def onNewClient(conn,addr):
 
     conn.close()
 
-while True:
-    conn, addr = s.accept()
-    threading.Thread(target=onNewClient,args=(conn,addr)).start()
+if __name__ == '__main__':
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except:
+        print('Failed to create socket! Exiting...')
+        sys.exit()
+    
+    s.bind((HOST, PORT))
+    s.listen()
+    print('Listening on '+str(socket.gethostbyname(HOST))+':'+str(PORT))
 
-s.close()
+    while True:
+        conn, addr = s.accept()
+        child_pid = os.fork()
+        if child_pid == 0:
+            onNewClient(conn,addr)
+            conn.close()
+            sys.exit()
+        conn.close()
+    s.close()
