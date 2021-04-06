@@ -6,33 +6,30 @@ except:
     print('Hostname could not be resolved! Exiting...')
     sys.exit()
 
-PORT = 54321
+PORT = 0 # 54321
 
 def onNewClient(conn,addr):
-    print('Connected by', addr)
     data = conn.recv(1024).decode('utf-8')
     if "GET / HTTP/1.1" in data:
         print('Sent empty form to', addr)
         conn.sendall(
-            b"HTTP/1.1 200 OK\n"
-            + b"Content-Type: text/html\n"
-            + b"\n"
-            + b"<html><body><form method='post'><input type='text' name='entered_text' value='Enter Text Here'><input type='submit' value='Submit'></form></body></html>\n")
+            b"HTTP/1.1 200 OK\r\n"
+            + b"Connection: keep-alive\r\n"
+            + b"Content-Type: text/html\r\n"
+            + b"\r\n"
+            + b"<html><body><form method='post'>Enter text here:<br/><input type='text' name='entered_text' value=''><input type='submit' value='Submit'></form></body></html>\n")
     elif "POST / HTTP/1.1" in data and "entered_text=" in data:
         try:
             entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
             print('Sent updated webpage to', addr)
             conn.sendall(
-                b"HTTP/1.1 200 OK\n"
-                + b"Content-Type: text/html\n"
-                + b"\n"
-                + b"<html><body><b>Entered text:</b> \""
-                + bytes(entered_text,'utf-8')
-                + b"\"</body></html>\n")
+                b"HTTP/1.1 200 OK\r\n"
+                + b"Connection: keep-alive\r\n"
+                + b"Content-Type: text/html\r\n"
+                + b"\r\n"
+                + b"<html><body><b>You typed:</b> \"" + bytes(entered_text,'utf-8') + b"\"</body></html>\n")
         except:
             print('Invalid format!')
-
-    conn.close()
 
 if __name__ == '__main__':
     try:
@@ -43,14 +40,29 @@ if __name__ == '__main__':
     
     s.bind((HOST, PORT))
     s.listen()
-    print('Listening on '+str(socket.gethostbyname(HOST))+':'+str(PORT))
+    print('Listening on {}:{}'.format(socket.gethostbyname(HOST),s.getsockname()[1]))
 
     while True:
-        conn, addr = s.accept()
-        child_pid = os.fork()
-        if child_pid == 0:
-            onNewClient(conn,addr)
+        try:
+            conn = None
+            conn, addr = s.accept()
+            pid = os.fork()
+            if pid == 0:
+                s.close() # close listen port
+                s = None
+                print('Connection with socket {} started'.format(addr[1]))    
+                onNewClient(conn,addr)
+                conn.close()
+                conn = None
+                print('Connection with socket {} closed'.format(addr[1]))
+                sys.exit()
             conn.close()
-            sys.exit()
-        conn.close()
-    s.close()
+            conn = None
+        except KeyboardInterrupt:
+            if conn: conn.close()
+            break
+    
+    if s: 
+        print('Listen process on {}:{} stopped'.format(socket.gethostbyname(HOST),s.getsockname()[1]))
+        s.close()
+    sys.exit()
