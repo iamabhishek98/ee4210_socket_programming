@@ -1,11 +1,5 @@
 import socket, os, sys, urllib.parse
 
-try:
-    HOST = socket.gethostname()
-except:
-    print('Hostname could not be resolved! Exiting...')
-    sys.exit()
-
 PORT = 0 # 54321
 
 def createHTTPResponse(addr,body):
@@ -34,11 +28,17 @@ def onNewClient(conn,addr):
 
 if __name__ == '__main__':
     try:
+        HOST = socket.gethostname()
+    except:
+        print('Hostname could not be resolved! Exiting...')
+        sys.exit()
+    
+    try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except:
         print('Failed to create socket! Exiting...')
         sys.exit()
-    
+
     s.bind((HOST, PORT))
     s.listen()
     print('Listening on {}:{}'.format(socket.gethostbyname(HOST),s.getsockname()[1]))
@@ -64,4 +64,3 @@ if __name__ == '__main__':
     if s: 
         print('Listen process on {}:{} stopped'.format(socket.gethostbyname(HOST),s.getsockname()[1]))
         s.close()
-    sys.exit()

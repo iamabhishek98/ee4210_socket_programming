@@ -1,12 +1,6 @@
 import socket, os, sys
 
-try:
-    HOST = socket.gethostname()
-except:
-    print('Hostname could not be resolved! Exiting...')
-    sys.exit()
-
-PORT = 12345
+PORT = 0
 
 def createHTTPResponse(addr,body):
     HTTPResponse = ("HTTP/1.1 200 OK\r\n"
@@ -26,13 +20,19 @@ def onNewClent(conn, addr):
 
 if __name__ == '__main__':
     try:
+        HOST = socket.gethostname()
+    except:
+        print('Hostname could not be resolved! Exiting...')
+        sys.exit()
+
+    try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     except:
         print('Failed to create socket! Exiting...')
         sys.exit()
     
     s.bind((HOST, PORT))
-    print('Socket binded to '+str(socket.gethostbyname(HOST))+':'+str(PORT))
+    print('Socket binded to '+str(socket.gethostbyname(HOST))+':'+str(s.getsockname()[1]))
     
     while True:
         conn, addr = s.recvfrom(1024)
