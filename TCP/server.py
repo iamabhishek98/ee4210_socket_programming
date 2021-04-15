@@ -8,26 +8,29 @@ except:
 
 PORT = 0 # 54321
 
+def createHTTPResponse(addr,body):
+    HTTPResponse = ("HTTP/1.1 200 OK\r\n"
+                + "Host: {}:{}\r\n".format(addr[0],addr[1])
+                + "Accept-Ranges: bytes\r\n"
+                + "Content-Length: {}\r\n".format(len(body))
+                + "Keep-Alive: timeout=10, max=100\r\n"
+                + "Connection: Keep-Alive\r\n"
+                + "Content-Type: text/html\r\n"
+                + "\r\n" + body)
+    return bytes(HTTPResponse, 'utf-8')
+
 def onNewClient(conn,addr):
     data = conn.recv(1024).decode('utf-8')
     if "GET / HTTP/1.1" in data:
-        print('Sent empty form to', addr)
-        conn.sendall(
-            b"HTTP/1.1 200 OK\r\n"
-            + b"Connection: keep-alive\r\n"
-            + b"Content-Type: text/html\r\n"
-            + b"\r\n"
-            + b"<html><body><form method='post'>Enter text here:<br/><input type='text' name='entered_text' value=''><input type='submit' value='Submit'></form></body></html>\n")
+        print('Sent empty form to {}:{}'.format(addr[0],addr[1]))
+        body = "<html><body><form method='post'>Enter text here:<br/><input type='text' name='entered_text' value=''><input type='submit' value='Submit'></form></body></html>\n"
+        conn.sendall(createHTTPResponse(addr,body))
     elif "POST / HTTP/1.1" in data and "entered_text=" in data:
         try:
             entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
-            print('Sent updated webpage to', addr)
-            conn.sendall(
-                b"HTTP/1.1 200 OK\r\n"
-                + b"Connection: keep-alive\r\n"
-                + b"Content-Type: text/html\r\n"
-                + b"\r\n"
-                + b"<html><body><b>You typed:</b> \"" + bytes(entered_text,'utf-8') + b"\"</body></html>\n")
+            print('Sent updated webpage to {}:{}'.format(addr[0],addr[1]))
+            body = "<html><body><b>You typed:</b> \"" + entered_text + "\"</body></html>\n"
+            conn.sendall(createHTTPResponse(addr,body))
         except:
             print('Invalid format!')
 
@@ -50,11 +53,9 @@ if __name__ == '__main__':
             if pid == 0:
                 s.close() # close listen port
                 s = None
-                print('Connection with socket {} started'.format(addr[1]))    
                 onNewClient(conn,addr)
                 conn.close()
                 conn = None
-                print('Connection with socket {} closed'.format(addr[1]))
                 sys.exit()
             conn.close()
             conn = None
