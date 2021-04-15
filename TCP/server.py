@@ -13,8 +13,6 @@ def createHTTPResponse(addr,body):
                 + "Host: {}:{}\r\n".format(addr[0],addr[1])
                 + "Accept-Ranges: bytes\r\n"
                 + "Content-Length: {}\r\n".format(len(body))
-                + "Keep-Alive: timeout=10, max=100\r\n"
-                + "Connection: Keep-Alive\r\n"
                 + "Content-Type: text/html\r\n"
                 + "\r\n" + body)
     return bytes(HTTPResponse, 'utf-8')
