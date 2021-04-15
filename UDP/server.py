@@ -1,4 +1,4 @@
-import socket, threading, sys
+import socket, sys
 
 try:
     HOST = socket.gethostname()
