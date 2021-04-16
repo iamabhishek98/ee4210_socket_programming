@@ -29,7 +29,7 @@ def onNewClient(conn,addr):
     # checks for valid POST request
     elif "POST / HTTP/1.1" in data and "entered_text=" in data:
         try:
-            # parse entered form input
+            # parses entered form input
             entered_text = urllib.parse.unquote(data.split('entered_text=')[1].replace("+","&nbsp"))
             # html webpage with entered form input
             body = "<html><body><b>You typed:</b> \"{}\"</body></html>\n".format(entered_text)
@@ -61,27 +61,22 @@ if __name__ == '__main__':
 
     while True:
         try:
-            conn = None
-            # accept connection
+            # accepts connection
             conn, addr = s.accept()
             # forks the process
             pid = os.fork()
             # checks if fork operation was successful
             if pid == 0:
-                # close listen port
+                # closes listen port
                 s.close()
-                s = None
                 onNewClient(conn,addr)
-                # close connection
+                # closes connection to client
                 conn.close()
-                conn = None
                 sys.exit()
             conn.close()
-            conn = None
         except KeyboardInterrupt:
             if conn: conn.close()
             break
     
     if s: 
-        print('Listen process on {}:{} stopped'.format(socket.gethostbyname(HOST),s.getsockname()[1]))
         s.close()

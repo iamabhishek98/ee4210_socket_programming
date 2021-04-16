@@ -35,7 +35,7 @@ if __name__ == '__main__':
         sys.exit()
 
     try:
-        # create UDP socket
+        # creates UDP socket
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     except:
         print('Failed to create socket! Exiting...')
@@ -46,11 +46,17 @@ if __name__ == '__main__':
     print('Socket binded to '+str(socket.gethostbyname(HOST))+':'+str(s.getsockname()[1]))
     
     while True:
-        # receives data from clients
-        conn, addr = s.recvfrom(1024)
-        # forks the process
-        pid = os.fork()
-        # checks if fork operation was successful
-        if pid == 0:
-            onNewClent(conn, addr)
-            sys.exit()
+        try:
+            # receives data from clients
+            conn, addr = s.recvfrom(1024)
+            # forks the process
+            pid = os.fork()
+            # checks if fork operation was successful
+            if pid == 0:
+                onNewClent(conn, addr)
+                sys.exit()
+        except KeyboardInterrupt:
+            break
+    
+    if s: 
+        s.close()
